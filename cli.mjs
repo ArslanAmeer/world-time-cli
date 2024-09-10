@@ -189,15 +189,36 @@ const showPopularCountriesTime = async () => {
 const showAllCountriesTime = async () => {
   console.log(chalk.blue("Displaying all countries and their times..."));
 
+  // Load the country timezones
   const countryTimezones = JSON.parse(fs.readFileSync(COUNTRY_TIMEZONE_FILE));
 
-  // Loop through all countries in the file and display their timezones
-  for (const country in countryTimezones) {
-    await showTimeForCountry(country); // Ensure each country is displayed in sequence
+  // Create a Set to track processed timezones to avoid duplicates
+  const processedCountries = new Set();
+
+  // Loop through all country names and codes in the file
+  for (const [countryNameOrCode, timezones] of Object.entries(countryTimezones)) {
+    // Normalize country name or code to lowercase for case-insensitive comparison
+    const countryLowerCase = countryNameOrCode.toLowerCase();
+
+    // Skip if this set of timezones has already been processed
+    const timezoneKey = JSON.stringify(timezones); // Convert timezones to a string for comparison
+    if (processedCountries.has(timezoneKey)) {
+      continue; // If this set of timezones is already processed, skip this entry
+    }
+
+    // Mark this set of timezones as processed
+    processedCountries.add(timezoneKey);
+
+    // Display the time for the current country (name or code)
+    await showTimeForCountry(countryNameOrCode);
   }
 
   process.exit(0); // Exit after displaying all times
 };
+
+
+
+
 
 // CLI Command Definition
 program
@@ -206,17 +227,48 @@ program
     "Show time for popular countries, all countries, or a specific country"
   )
   .option("--all", "Show time for all countries")
-  .option("--refresh", "Refresh the timezones from the API")
   .argument("[country]", "Show time for a specific country")
   .action((country, options) => {
     if (options.all) {
-      showAllCountriesTime(); // Corrected function call
-    } else if (options.refresh) {
-      refreshTimezones();
+      showAllCountriesTime();
     } else if (country) {
       showTimeForCountry(country);
     } else {
       showPopularCountriesTime();
+    }
+  });
+
+  program
+  .command('help')
+  .description('Display help and usage details')
+  .action(() => {
+    console.log(chalk.hex('#64ffda').bold('\nAvailable Commands:\n'));
+    console.log(chalk.hex('#64ffda')('1. wtime <country>: Show the time for a specific country.'));
+    console.log(chalk.hex('#64ffda')('2. wtime --all: Show the time for all available countries.'));
+    console.log(chalk.hex('#64ffda')('3. wtime list: List all available countries supported by the CLI.'));
+    console.log('\n');
+  });
+
+
+  program
+  .command('list')
+  .description('Show all supported countries')
+  .action(async () => {
+    console.log(chalk.hex('#64ffda').bold('\nSupported Countries Commands:\n'));
+    console.log(chalk.green.bold('wtime <country name/country code>:\n'))
+    try {
+      // Use fs to read JSON file synchronously instead of dynamic import
+      const countryTimezones = JSON.parse(fs.readFileSync(COUNTRY_TIMEZONE_FILE));
+      const countryList = Object.keys(countryTimezones);
+
+      // Loop through and print each country
+      countryList.forEach((country) => {
+        console.log(chalk.hex('#a3be8c')(country));
+      });
+
+      console.log('\n');
+    } catch (error) {
+      console.error(chalk.red('Error loading countries list.'));
     }
   });
 

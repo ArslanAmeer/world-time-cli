@@ -72,18 +72,45 @@ const showTimeForCountry = async (country) => {
 
   try {
     const timezones = getCountryTimezones(country);
-    const results = timezones.map((timezone) => {
-      const currentTime = new Date().toLocaleString('en-US', { timeZone: timezone });
-      return { TimeZone: timezone, Time: currentTime };
+    
+    // Manually create a list with a count starting from 1 and extract the city name
+    const results = timezones.map((timezone, index) => {
+      const currentTime = new Date().toLocaleString('en-US', {
+        timeZone: timezone,
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: true
+      });
+
+      // Extract city name from timezone (e.g., America/Toronto -> Toronto)
+      const cityName = timezone.split('/')[1].replace('_', ' '); // Replace _ with space for better readability
+
+      // Return a clean row
+      return {
+        // No: index + 1, // Start with 1
+        City: cityName, // Show only the city name
+        Time: currentTime // Human-readable time
+      };
     });
 
-    spinner.succeed(`Current time for ${country}:`);
-    console.table(results);
+    // Styled country output
+    const styledCountry = chalk.bold.blueBright(country.toUpperCase());
+    const styledText = chalk.bold(`Current time for ${styledCountry}:`);
+
+    spinner.succeed(styledText);
+    console.table(results); // Display the table without styled text
   } catch (error) {
     spinner.fail(`Error fetching time for ${country}.`);
     console.error(error);
   }
 };
+
+
 
 // 7. Show time for popular countries (you can customize this logic to show specific countries)
 const showPopularCountriesTime = async () => {

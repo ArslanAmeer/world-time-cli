@@ -1,12 +1,21 @@
 {
   "name": "world-time-cli",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "cli.mjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "bin": {
+    "wtime": "./cli.mjs"
+  },
   "keywords": [],
-  "author": "",
+  "author": "Arslan Ameer",
   "license": "ISC",
-  "description": ""
+  "description": "A Node CLI package to get instant world time",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "chalk": "^5.3.0",
+    "commander": "^12.1.0",
+    "ora": "^8.1.0"
+  }
 }

@@ -11,6 +11,8 @@ World Time CLI
 
 Designed with developers in mind, `world-time-cli` is a convenient and accessible tool for those who spend a lot of time in the terminal. It's a fun, quick way to avoid switching contexts and stay productive while working on code!
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/arslanameer)
+
 
 ## Features
 - **Popular Countries**: Displays the current time for major countries like the USA, UK, China, Australia, and more.
@@ -103,6 +105,8 @@ This project is licensed under the [MIT License](https://opensource.org/licenses
 ## Author
 
 `world-time-cli` is developed and maintained by [Arslan Ameer](https://github.com/arslanameer). If you have any questions or need help, feel free to open an issue on the [GitHub repository](https://github.com/ArslanAmeer/world-time-cli/issues).
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/arslanameer)
 
 ## Contributing
 

@@ -28,33 +28,8 @@ const COUNTRY_TIMEZONE_FILE = path.join(
   "countries_timezones.json"
 );
 
-// 2. Fetching Timezones from the API (only if necessary)
-const fetchTimezones = async () => {
-  const spinner = ora("Fetching timezones...").start();
-  try {
-    const response = await axios.get("http://worldtimeapi.org/api/timezone");
-    const timezones = response.data;
-    // Save timezones to a local file
-    fs.writeFileSync(TIMEZONE_FILE, JSON.stringify(timezones, null, 2));
-    spinner.succeed("Timezones fetched and saved locally!");
-  } catch (error) {
-    spinner.fail("Failed to fetch timezones.");
-    console.error(error);
-  }
-};
 
-// 3. Get Timezones (from file or fetch new)
-const getTimezones = () => {
-  if (fs.existsSync(TIMEZONE_FILE)) {
-    const data = fs.readFileSync(TIMEZONE_FILE);
-    return JSON.parse(data);
-  } else {
-    console.log("Timezones file not found, fetching new data...");
-    fetchTimezones();
-  }
-};
-
-// 5. Get Country Timezones (fetch timezones based on country, case-insensitive)
+// 3. Get Country Timezones (fetch timezones based on country, case-insensitive)
 const getCountryTimezones = (country) => {
   if (!fs.existsSync(COUNTRY_TIMEZONE_FILE)) {
     console.error(chalk.red("Country to timezone mapping file not found."));
@@ -88,7 +63,7 @@ const getCountryTimezones = (country) => {
   return normalizedTimezones[normalizedCountry];
 };
 
-// 6. Show time for a specific country
+// 4. Show time for a specific country
 const showTimeForCountry = async (country, isFirstCountry = false) => {
   const spinner = ora(`Fetching time for ${country}...`).start();
 
@@ -166,7 +141,7 @@ const showTimeForCountry = async (country, isFirstCountry = false) => {
   }
 };
 
-// 7. Show time for popular countries (you can customize this logic to show specific countries)
+// 5. Show time for popular countries (you can customize this logic to show specific countries)
 const showPopularCountriesTime = async () => {
   console.log(chalk.green("Displaying popular countries and their times..."));
 
@@ -185,7 +160,7 @@ const showPopularCountriesTime = async () => {
   process.exit(0); // Exit after showing times
 };
 
-// 8. Show time for all countries
+// 6. Show time for all countries
 const showAllCountriesTime = async () => {
   console.log(chalk.blue("Displaying all countries and their times..."));
 
@@ -215,10 +190,6 @@ const showAllCountriesTime = async () => {
 
   process.exit(0); // Exit after displaying all times
 };
-
-
-
-
 
 // CLI Command Definition
 program

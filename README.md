@@ -2,9 +2,9 @@
 World Time CLI
 </h1>
 
-<p align="center" float="left">
+<!-- <p align="center" float="left">
      <img src="./wtime.png" alt="wtime" width="450">
-</p>
+</p> -->
 
 
 `world-time-cli` is a simple yet handy Node.js command-line tool that allows you to quickly fetch the current time for various countries worldwide without needing an internet search. Whether you're looking for the time in a specific country, popular regions, or all supported countries, this CLI makes it easy and fun to check the time right from your terminal.

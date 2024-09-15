@@ -1,0 +1,4 @@
+cli.mjs
+src/
+node_modules/
+*.log

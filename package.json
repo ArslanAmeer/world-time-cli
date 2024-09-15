@@ -1,6 +1,6 @@
 {
   "name": "world-time-cli",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "main": "cli.min.mjs",
   "bin": {
     "wtime": "./cli.min.mjs"

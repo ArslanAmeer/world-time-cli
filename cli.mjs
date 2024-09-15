@@ -4,7 +4,6 @@ import { fileURLToPath } from "url";
 import path from "path";
 import chalk from "chalk";
 import fs from "fs";
-import ora from "ora";
 import Table from "cli-table3";
 
 // Create __dirname for ES modules
@@ -21,17 +20,10 @@ const colors = {
   margin: "\n", // Add margin between tables
 };
 
-// Create an instance of the Command class
-const program = new Command();
+// Paths for country data files
+const COUNTRY_TIMEZONE_FILE = path.join(__dirname, "countries_timezones.json");
 
-// Paths for timezone and country data files
-const TIMEZONE_FILE = path.join(path.resolve(), "timezones.json");
-const COUNTRY_TIMEZONE_FILE = path.join(
-  path.resolve(),
-  "countries_timezones.json"
-);
-
-// 3. Get Country Timezones (fetch timezones based on country, case-insensitive)
+// 1. Get Country Timezones (fetch timezones based on country, case-insensitive)
 const getCountryTimezones = (country) => {
   if (!fs.existsSync(COUNTRY_TIMEZONE_FILE)) {
     console.error(chalk.red("Country to timezone mapping file not found."));
@@ -59,15 +51,12 @@ const getCountryTimezones = (country) => {
   return normalizedTimezones[normalizedCountry];
 };
 
-// 4. Show time for a specific country
+// 2. Show time for a specific country
 const showTimeForCountry = async (country, isFirstCountry = false) => {
-  const spinner = ora(`Fetching time for ${country}...`).start();
+  console.log(`Fetching time for ${country}...`);
 
   try {
     const timezones = getCountryTimezones(country);
-
-    // Stop the spinner before displaying the table
-    spinner.stop();
 
     // Add a margin before the first table
     if (isFirstCountry) {
@@ -139,12 +128,11 @@ const showTimeForCountry = async (country, isFirstCountry = false) => {
     // Add margin after each table
     console.log(colors.margin); // Add a blank line after each country's table
   } catch (error) {
-    spinner.fail(`Error fetching time for ${country}.`);
-    console.error(error);
+    console.error(`Error fetching time for ${country}.`, error);
   }
 };
 
-// 5. Show time for popular countries (you can customize this logic to show specific countries)
+// 3. Show time for popular countries
 const showPopularCountriesTime = async () => {
   console.log(chalk.green("Displaying popular countries and their times..."));
 
@@ -154,17 +142,17 @@ const showPopularCountriesTime = async () => {
     "Pakistan",
     "Australia",
     "Canada",
-    "Germany"
+    "Germany",
   ];
 
   for (const country of popularCountries) {
-    await showTimeForCountry(country); // Ensure we wait for each country's time to be displayed
+    await showTimeForCountry(country, true); // Ensure we wait for each country's time to be displayed
   }
 
   process.exit(0); // Exit after showing times
 };
 
-// 6. Show time for all countries
+// 4. Show time for all countries
 const showAllCountriesTime = async () => {
   console.log(chalk.blue("Displaying all countries and their times..."));
 
@@ -178,13 +166,10 @@ const showAllCountriesTime = async () => {
   for (const [countryNameOrCode, timezones] of Object.entries(
     countryTimezones
   )) {
-    // Normalize country name or code to lowercase for case-insensitive comparison
-    const countryLowerCase = countryNameOrCode.toLowerCase();
-
     // Skip if this set of timezones has already been processed
-    const timezoneKey = JSON.stringify(timezones); // Convert timezones to a string for comparison
+    const timezoneKey = JSON.stringify(timezones);
     if (processedCountries.has(timezoneKey)) {
-      continue; // If this set of timezones is already processed, skip this entry
+      continue;
     }
 
     // Mark this set of timezones as processed
@@ -197,28 +182,36 @@ const showAllCountriesTime = async () => {
   process.exit(0); // Exit after displaying all times
 };
 
-// CLI Command Definition
-program
-  .name("wtime")
-  .description(
-    "Show time for popular countries, all countries, or a specific country"
-  )
-  .option("--all", "Show time for all countries")
-  .argument("[country]", "Show time for a specific country")
-  .action((country, options) => {
-    if (options.all) {
-      showAllCountriesTime();
-    } else if (country) {
-      showTimeForCountry(country);
-    } else {
-      showPopularCountriesTime();
-    }
-  });
+// 5. Show supported countries list
+const showSupportedCountries = () => {
+  console.log(chalk.hex("#64ffda").bold("\nSupported Countries:\n"));
+  console.log(chalk.green.bold("wtime <country name/country code>:\n"));
+  try {
+    // Use fs to read JSON file synchronously instead of dynamic import
+    const countryTimezones = JSON.parse(
+      fs.readFileSync(COUNTRY_TIMEZONE_FILE)
+    );
+    const countryList = Object.keys(countryTimezones);
 
-program
-  .command("help")
-  .description("Display help and usage details")
-  .action(() => {
+    // Loop through and print each country
+    countryList.forEach((country) => {
+      console.log(chalk.hex("#a3be8c")(country));
+    });
+
+    console.log("\n");
+  } catch (error) {
+    console.error(chalk.red("Error loading countries list."));
+  }
+};
+
+// 6. Parse CLI arguments manually
+const args = process.argv.slice(2);
+const command = args[0];
+const country = args[1];
+
+// Handle different commands
+switch (command) {
+  case "help":
     console.log(chalk.hex("#64ffda").bold("\nAvailable Commands:\n"));
     console.log(
       chalk.hex("#64ffda")(
@@ -236,30 +229,21 @@ program
       )
     );
     console.log("\n");
-  });
+    break;
 
-program
-  .command("list")
-  .description("Show all supported countries")
-  .action(async () => {
-    console.log(chalk.hex("#64ffda").bold("\nSupported Countries Commands:\n"));
-    console.log(chalk.green.bold("wtime <country name/country code>:\n"));
-    try {
-      // Use fs to read JSON file synchronously instead of dynamic import
-      const countryTimezones = JSON.parse(
-        fs.readFileSync(COUNTRY_TIMEZONE_FILE)
-      );
-      const countryList = Object.keys(countryTimezones);
+  case "list":
+    showSupportedCountries();
+    break;
 
-      // Loop through and print each country
-      countryList.forEach((country) => {
-        console.log(chalk.hex("#a3be8c")(country));
-      });
+  case "--all":
+    showAllCountriesTime();
+    break;
 
-      console.log("\n");
-    } catch (error) {
-      console.error(chalk.red("Error loading countries list."));
+  default:
+    if (command) {
+      showTimeForCountry(command);
+    } else {
+      showPopularCountriesTime();
     }
-  });
-
-program.parse(process.argv);
+    break;
+}

@@ -1,22 +1,25 @@
 #!/usr/bin/env node
 
-import { Command } from "commander";
-import Table from "cli-table3";
+import { fileURLToPath } from "url";
+import path from "path";
 import chalk from "chalk";
 import fs from "fs";
-import path from "path";
 import ora from "ora";
+import Table from "cli-table3";
+
+// Create __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Define colors based on your portfolio
 const colors = {
-  no: '#64ffda', // Highlighted text color for numbers (light teal)
-  city: '#a3be8c', // Light green for city names
-  time: '#b48ead', // Light violet for time
-  country: '#64ffda', // Light teal for country name
-  border: '#4C566A', // Medium gray for table borders
-  margin: '\n' // Add margin between tables
+  no: "#64ffda", // Highlighted text color for numbers (light teal)
+  city: "#a3be8c", // Light green for city names
+  time: "#b48ead", // Light violet for time
+  country: "#64ffda", // Light teal for country name
+  border: "#4C566A", // Medium gray for table borders
+  margin: "\n", // Add margin between tables
 };
-
 
 // Create an instance of the Command class
 const program = new Command();
@@ -28,7 +31,6 @@ const COUNTRY_TIMEZONE_FILE = path.join(
   "countries_timezones.json"
 );
 
-
 // 3. Get Country Timezones (fetch timezones based on country, case-insensitive)
 const getCountryTimezones = (country) => {
   if (!fs.existsSync(COUNTRY_TIMEZONE_FILE)) {
@@ -38,10 +40,7 @@ const getCountryTimezones = (country) => {
 
   const countryTimezones = JSON.parse(fs.readFileSync(COUNTRY_TIMEZONE_FILE));
 
-  // Convert the input to lowercase to make the search case-insensitive
   const normalizedCountry = country.toLowerCase();
-
-  // Create a normalized lookup object with lowercase keys
   const normalizedTimezones = Object.keys(countryTimezones).reduce(
     (acc, key) => {
       acc[key.toLowerCase()] = countryTimezones[key];
@@ -50,12 +49,9 @@ const getCountryTimezones = (country) => {
     {}
   );
 
-  // Check if the normalized country name exists
   if (!normalizedTimezones[normalizedCountry]) {
     console.error(
-      chalk.red(
-        `No timezones found for ${country}. Please check the country name or try another country.`
-      )
+      chalk.red(`No timezones found for ${country}. Please check the country name or try another country.`)
     );
     process.exit(1);
   }
@@ -69,7 +65,7 @@ const showTimeForCountry = async (country, isFirstCountry = false) => {
 
   try {
     const timezones = getCountryTimezones(country);
-    
+
     // Stop the spinner before displaying the table
     spinner.stop();
 
@@ -81,48 +77,55 @@ const showTimeForCountry = async (country, isFirstCountry = false) => {
     // Create a table with thick borders and matching colors
     const table = new Table({
       head: [
-        chalk.hex(colors.no).bold('No'), // Light teal for headers
-        chalk.hex(colors.city).bold('City'), // Light green for headers
-        chalk.hex(colors.time).bold('Time')  // Light violet for headers
+        chalk.hex(colors.no).bold("No"), // Light teal for headers
+        chalk.hex(colors.city).bold("City"), // Light green for headers
+        chalk.hex(colors.time).bold("Time"), // Light violet for headers
       ],
       style: {
-        head: ['cyan'], // Default style
-        border: [] // No border color in cli-table3, but chars will have color
+        head: ["cyan"], // Default style
+        border: [], // No border color in cli-table3, but chars will have color
       },
       chars: {
-        'top': chalk.hex(colors.border)('═'), 'top-mid': chalk.hex(colors.border)('╤'), 
-        'top-left': chalk.hex(colors.border)('╔'), 'top-right': chalk.hex(colors.border)('╗'),
-        'bottom': chalk.hex(colors.border)('═'), 'bottom-mid': chalk.hex(colors.border)('╧'), 
-        'bottom-left': chalk.hex(colors.border)('╚'), 'bottom-right': chalk.hex(colors.border)('╝'),
-        'left': chalk.hex(colors.border)('║'), 'left-mid': chalk.hex(colors.border)('╟'), 
-        'mid': chalk.hex(colors.border)('─'), 'mid-mid': chalk.hex(colors.border)('┼'),
-        'right': chalk.hex(colors.border)('║'), 'right-mid': chalk.hex(colors.border)('╢'), 
-        'middle': chalk.hex(colors.border)('│')
-      }
+        top: chalk.hex(colors.border)("═"),
+        "top-mid": chalk.hex(colors.border)("╤"),
+        "top-left": chalk.hex(colors.border)("╔"),
+        "top-right": chalk.hex(colors.border)("╗"),
+        bottom: chalk.hex(colors.border)("═"),
+        "bottom-mid": chalk.hex(colors.border)("╧"),
+        "bottom-left": chalk.hex(colors.border)("╚"),
+        "bottom-right": chalk.hex(colors.border)("╝"),
+        left: chalk.hex(colors.border)("║"),
+        "left-mid": chalk.hex(colors.border)("╟"),
+        mid: chalk.hex(colors.border)("─"),
+        "mid-mid": chalk.hex(colors.border)("┼"),
+        right: chalk.hex(colors.border)("║"),
+        "right-mid": chalk.hex(colors.border)("╢"),
+        middle: chalk.hex(colors.border)("│"),
+      },
     });
 
     // Populate the table with timezones and human-readable times
     timezones.forEach((timezone, index) => {
-      const currentTime = new Date().toLocaleString('en-US', {
+      const currentTime = new Date().toLocaleString("en-US", {
         timeZone: timezone,
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-        second: 'numeric',
-        hour12: true
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "numeric",
+        second: "numeric",
+        hour12: true,
       });
 
       // Extract city name from timezone (e.g., America/Toronto -> Toronto)
-      const cityName = timezone.split('/')[1].replace('_', ' '); // Replace _ with space for better readability
+      const cityName = timezone.split("/")[1].replace("_", " "); // Replace _ with space for better readability
 
       // Add a row to the table with portfolio colors
       table.push([
         chalk.hex(colors.no).bold(index + 1), // No (light teal)
         chalk.hex(colors.city)(cityName), // City (light green)
-        chalk.hex(colors.time)(currentTime) // Time (light violet)
+        chalk.hex(colors.time)(currentTime), // Time (light violet)
       ]);
     });
 
@@ -148,9 +151,10 @@ const showPopularCountriesTime = async () => {
   const popularCountries = [
     "United States",
     "United Kingdom",
-    "India",
+    "Pakistan",
     "Australia",
     "Canada",
+    "Germany"
   ];
 
   for (const country of popularCountries) {
@@ -171,7 +175,9 @@ const showAllCountriesTime = async () => {
   const processedCountries = new Set();
 
   // Loop through all country names and codes in the file
-  for (const [countryNameOrCode, timezones] of Object.entries(countryTimezones)) {
+  for (const [countryNameOrCode, timezones] of Object.entries(
+    countryTimezones
+  )) {
     // Normalize country name or code to lowercase for case-insensitive comparison
     const countryLowerCase = countryNameOrCode.toLowerCase();
 
@@ -209,37 +215,50 @@ program
     }
   });
 
-  program
-  .command('help')
-  .description('Display help and usage details')
+program
+  .command("help")
+  .description("Display help and usage details")
   .action(() => {
-    console.log(chalk.hex('#64ffda').bold('\nAvailable Commands:\n'));
-    console.log(chalk.hex('#64ffda')('1. wtime <country>: Show the time for a specific country.'));
-    console.log(chalk.hex('#64ffda')('2. wtime --all: Show the time for all available countries.'));
-    console.log(chalk.hex('#64ffda')('3. wtime list: List all available countries supported by the CLI.'));
-    console.log('\n');
+    console.log(chalk.hex("#64ffda").bold("\nAvailable Commands:\n"));
+    console.log(
+      chalk.hex("#64ffda")(
+        "1. wtime <country>: Show the time for a specific country."
+      )
+    );
+    console.log(
+      chalk.hex("#64ffda")(
+        "2. wtime --all: Show the time for all available countries."
+      )
+    );
+    console.log(
+      chalk.hex("#64ffda")(
+        "3. wtime list: List all available countries supported by the CLI."
+      )
+    );
+    console.log("\n");
   });
 
-
-  program
-  .command('list')
-  .description('Show all supported countries')
+program
+  .command("list")
+  .description("Show all supported countries")
   .action(async () => {
-    console.log(chalk.hex('#64ffda').bold('\nSupported Countries Commands:\n'));
-    console.log(chalk.green.bold('wtime <country name/country code>:\n'))
+    console.log(chalk.hex("#64ffda").bold("\nSupported Countries Commands:\n"));
+    console.log(chalk.green.bold("wtime <country name/country code>:\n"));
     try {
       // Use fs to read JSON file synchronously instead of dynamic import
-      const countryTimezones = JSON.parse(fs.readFileSync(COUNTRY_TIMEZONE_FILE));
+      const countryTimezones = JSON.parse(
+        fs.readFileSync(COUNTRY_TIMEZONE_FILE)
+      );
       const countryList = Object.keys(countryTimezones);
 
       // Loop through and print each country
       countryList.forEach((country) => {
-        console.log(chalk.hex('#a3be8c')(country));
+        console.log(chalk.hex("#a3be8c")(country));
       });
 
-      console.log('\n');
+      console.log("\n");
     } catch (error) {
-      console.error(chalk.red('Error loading countries list.'));
+      console.error(chalk.red("Error loading countries list."));
     }
   });
 
